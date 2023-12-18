@@ -29,18 +29,22 @@ def sanity_check_experiment():
 
     for i in range(n_experiment_runs):
 
+        print(f"Started Run #{ i }")
+
         model.eval()
         expr = model.find_expression_for(X=X, Y=Y, num_opt_steps=n_opt_steps)
 
         plot_expression(expr, interpreter)
         plt.savefig(f"results/solution_{ i }.pdf")
 
-        with open(f"results/solution.json") as f:
+        with open(f"results/solution.txt") as f:
             f.writelines([
                 f"True Expression= {true_expr}",
                 f"Solution Found= { ''.join(expr) }",
                 f"RMSE= { torch.sqrt(torch.mean(torch.square(interpreter.evaluate(expr, X) - Y))) }"
             ])
+
+        print(f"Ended Run #{ i }")
 
 
 def main():
