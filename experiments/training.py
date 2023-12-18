@@ -7,7 +7,6 @@ from torch.utils.data import DataLoader
 from ac_grammar_vae.data import CFGEquationDataset
 from ac_grammar_vae.data.transforms import MathTokenEmbedding, ToTensor, Compose, PadSequencesToSameLength, GrammarParseTreeEmbedding
 from ac_grammar_vae.model.gvae import GrammarVariationalAutoencoder
-from ac_grammar_vae.model.gvae.interpreter import TorchEquationInterpreter
 
 
 def setup_dataset(n_samples, n_validation_samples=0):
@@ -123,14 +122,7 @@ def main():
         torch.save(model, export_file)
 
 
-def plot_expression(expression, interpreter, domain=(-5.0, 5.0), steps=250):
 
-    plt.figure()
-    xx = torch.linspace(*domain, steps=steps)
-    yy = interpreter.evaluate(expression, x=xx)
-    plt.plot(xx.numpy(), yy.numpy())
-    plt.title("".join(expression))
-    plt.show()
 
 
 if __name__ == "__main__":
