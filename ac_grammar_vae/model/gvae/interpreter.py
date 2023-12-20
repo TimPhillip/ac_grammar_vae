@@ -67,20 +67,20 @@ class ExpressionWithParameters(torch.nn.Module):
 
         for _ in range(num_opt_steps):
             optim.zero_grad()
-            Y_pred = eval(''.join(self._expr), {'x': X, 'theta': self._params})
+            Y_pred = eval(self._expression_str, {'torch': torch, 'x': X, 'theta': self._params})
             rmse = torch.sqrt(torch.mean(torch.square(Y_pred - Y)))
             rmse.backward()
             optim.step()
 
     def __call__(self, X):
         with torch.no_grad():
-            return eval(''.join(self._expr), {'x': X, 'theta': self._params})
+            return eval(self._expression_str, {'torch': torch, 'x': X, 'theta': self._params})
 
 
 if __name__ == "__main__":
 
     expr = ExpressionWithParameters([
-        'theta', '*', 'x',  '*', 'x', '+', 'theta'
+        'theta', '*', 'x',  '*', 'x', '+', 'exp', '(', 'theta', ')'
     ])
 
     xx = torch.linspace(-5, 5, 100)
