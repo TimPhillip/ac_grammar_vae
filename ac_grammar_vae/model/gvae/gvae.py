@@ -172,6 +172,10 @@ class GrammarVariationalAutoencoder(torch.nn.Module):
             Z_score.append(score)
 
         Z = torch.as_tensor(Z, dtype=torch.float64)
+
+        # replace missing values with the worst possible score
+        Z = torch.nan_to_num(Z, nan=torch.min(Z).item())
+
         Z_score = torch.unsqueeze(torch.stack(Z_score, dim=0), dim=-1)
         Z_score = torch.as_tensor(Z_score, dtype=torch.float64)
 

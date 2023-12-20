@@ -93,7 +93,7 @@ def isotherm_experiments():
 @hydra.main(version_base="1.2", config_path="../config", config_name="symbolic_regression")
 def main(cfg: SymbolicIsothermExperimentConfig):
 
-    n_opt_steps = 250
+    n_opt_steps = 100
 
     # setup the symbolic regression problem
     problem: SymbolicIsothermProblem = hydra.utils.instantiate(cfg.problem)
