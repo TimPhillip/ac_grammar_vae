@@ -173,11 +173,11 @@ class GrammarVariationalAutoencoder(torch.nn.Module):
 
         Z = torch.as_tensor(Z, dtype=torch.float64)
 
-        # replace missing values with the worst possible score
-        Z = torch.nan_to_num(Z, nan=torch.min(Z).item())
-
         Z_score = torch.unsqueeze(torch.stack(Z_score, dim=0), dim=-1)
         Z_score = torch.as_tensor(Z_score, dtype=torch.float64)
+
+        # replace missing values with the worst possible score
+        Z_score = torch.nan_to_num(Z_score, nan=torch.min(Z_score).item())
 
         ucb = estimate_ucb(Z, Z_score)
 
