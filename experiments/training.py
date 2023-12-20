@@ -9,10 +9,10 @@ from ac_grammar_vae.data.transforms import MathTokenEmbedding, ToTensor, Compose
 from ac_grammar_vae.model.gvae import GrammarVariationalAutoencoder
 
 
-def setup_dataset(n_samples, n_validation_samples=0):
+def setup_dataset(n_samples, n_validation_samples=0, expressions_with_parameters=False):
 
-    training = CFGEquationDataset(n_samples=n_samples)
-    validation = CFGEquationDataset(n_samples=n_validation_samples) if n_validation_samples > 0 else None
+    training = CFGEquationDataset(n_samples=n_samples, use_original_grammar=not expressions_with_parameters)
+    validation = CFGEquationDataset(n_samples=n_validation_samples, use_original_grammar=not expressions_with_parameters) if n_validation_samples > 0 else None
 
     embedding = GrammarParseTreeEmbedding(training.pcfg, pad_to_length=training.max_grammar_productions)
     training.transform = Compose([
@@ -37,7 +37,8 @@ def main():
     # Hyperparameters
     num_epochs = 10
     early_stopping_patience = 3
-    export_file = "results/gvae_pretrained.pth"
+    expression_with_parameters = True
+    export_file = "results/gvae_pretrained.pth" if not expression_with_parameters else "results/gvae_pretrained_parametric.pth"
     batch_size = 600
     val_batch_size = 2048
 
@@ -120,8 +121,6 @@ def main():
 
         # save the weights to file
         torch.save(model, export_file)
-
-
 
 
 

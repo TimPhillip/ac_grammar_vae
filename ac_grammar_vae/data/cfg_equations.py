@@ -11,17 +11,19 @@ from ac_grammar_vae.data.alphabet import alphabet
 
 class CFGEquationDataset(Dataset):
 
-    def __init__(self, n_samples=1000, transform=None, random_seed=2024, max_grammar_productions=32) -> None:
+    def __init__(self, n_samples=1000, transform=None, random_seed=2024, max_grammar_productions=32, use_original_grammar=True) -> None:
         self.n_samples = n_samples
         self.transform = transform
         self.random_seed = random_seed
         self.max_grammar_productions = max_grammar_productions
         
         # Initialize the grammar for the equation generation
-        self.pcfg = self.__initialize_grammar()
+        self.pcfg = self.__initialize_grammar(use_original_grammar=use_original_grammar)
     
-    def __initialize_grammar(self):
-        cfg = nltk.CFG.fromstring("""
+    def __initialize_grammar(self, use_original_grammar):
+
+        if use_original_grammar:
+            rules = """
             S -> S '+' T
             S -> S '*' T
             S -> S '/' T
@@ -34,7 +36,25 @@ class CFGEquationDataset(Dataset):
             T -> '1'
             T -> '2'
             T -> '3'
-        """)
+            """
+        else:
+            rules = """
+            S -> S '+' T
+            S -> S '*' T
+            S -> S '/' T
+            S -> S '**' T
+            S -> T
+            T -> '(' S ')'
+            T -> 'sin' '(' S ')'
+            T -> 'cos' '(' S ')'
+            T -> 'exp' '(' S ')'
+            T -> 'log' '(' S ')'
+            T -> 'sqrt' '(' S ')'
+            T -> 'x'
+            T -> 'theta'
+            """
+
+        cfg = nltk.CFG.fromstring(rules)
         pcfg = nltk.induce_pcfg(cfg.start(), cfg.productions())
         return pcfg
 

@@ -4,7 +4,7 @@ from .encoder import GrammarEncoderNetwork
 from .decoder import GrammarDecoderNetwork
 
 from ac_grammar_vae.data.transforms import GrammarParseTreeEmbedding
-from ac_grammar_vae.model.gvae.interpreter import TorchEquationInterpreter
+from ac_grammar_vae.model.gvae.interpreter import TorchEquationInterpreter, ExpressionWithParameters
 
 from botorch.models import SingleTaskGP
 from botorch.acquisition import UpperConfidenceBound
@@ -17,7 +17,7 @@ from botorch.optim import optimize_acqf
 
 class GrammarVariationalAutoencoder(torch.nn.Module):
 
-    def __init__(self, num_grammar_productions, max_of_production_steps, latent_dim, rule_embedding: GrammarParseTreeEmbedding):
+    def __init__(self, num_grammar_productions, max_of_production_steps, latent_dim, rule_embedding: GrammarParseTreeEmbedding, expressions_with_parameters: bool = False):
         super(GrammarVariationalAutoencoder, self).__init__()
 
         self.latent_dim = latent_dim
@@ -44,6 +44,8 @@ class GrammarVariationalAutoencoder(torch.nn.Module):
 
         # generate the decoder masks from the grammar embedding generation
         self.generate_decoder_masks(rule_embedding=rule_embedding)
+
+        self.expressions_with_parameters = expressions_with_parameters
 
     def generate_decoder_masks(self, rule_embedding: GrammarParseTreeEmbedding):
 
@@ -101,7 +103,8 @@ class GrammarVariationalAutoencoder(torch.nn.Module):
 
     def find_expression_for(self, X, Y, num_opt_steps=10):
 
-        interpreter = TorchEquationInterpreter()
+        if not self.expressions_with_parameters:
+            interpreter = TorchEquationInterpreter()
 
         # determine bounds for the latent space
         bounds = torch.as_tensor([[-10] * self.latent_dim, [10] * self.latent_dim])
@@ -116,11 +119,20 @@ class GrammarVariationalAutoencoder(torch.nn.Module):
                     continue
 
                 if expr is not None:
-                    Y_approx = interpreter.evaluate(expr, x=X)
+
+                    # evaluate the expression
+                    if self.expressions_with_parameters:
+                        parsed_expr = ExpressionWithParameters(expr=expr)
+                        parsed_expr.optimize_parameters(X, Y)
+                        Y_approx = parsed_expr(X)
+                    else:
+                        Y_approx = interpreter.evaluate(expr, x=X)
+
+                    # compute the error
                     rmse = torch.sqrt(torch.mean(torch.square(Y - Y_approx)))
 
                     if torch.isfinite(rmse):
-                        return -(rmse), expr
+                        return -(rmse), parsed_expr if self.expressions_with_parameters else expr
 
             return torch.as_tensor(default_score_value), None
 
