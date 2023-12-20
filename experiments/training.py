@@ -35,7 +35,7 @@ def setup_dataset(n_samples, n_validation_samples=0, expressions_with_parameters
 def main():
 
     # Hyperparameters
-    num_epochs = 10
+    num_epochs = 20
     early_stopping_patience = 3
     expression_with_parameters = True
     export_file = "results/gvae_pretrained.pth" if not expression_with_parameters else "results/gvae_pretrained_parametric.pth"
@@ -43,7 +43,7 @@ def main():
     val_batch_size = 2048
 
     # create the dataset
-    training, validation, embedding = setup_dataset(n_samples=10**5, n_validation_samples=10**4)
+    training, validation, embedding = setup_dataset(n_samples=10**5, n_validation_samples=10**4, expressions_with_parameters=expression_with_parameters)
     training_loader = DataLoader(dataset=training,
                                  batch_size=batch_size,
                                  shuffle=True,
@@ -59,7 +59,8 @@ def main():
         len(training.pcfg.productions()) + 1,
         training.max_grammar_productions,
         latent_dim=16,
-        rule_embedding=embedding
+        rule_embedding=embedding,
+        expressions_with_parameters=expression_with_parameters
     )
 
     optimizer = torch.optim.Adam(lr=1e-4, params=model.parameters())
