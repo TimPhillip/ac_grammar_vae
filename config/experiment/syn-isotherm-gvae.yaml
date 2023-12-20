@@ -1,0 +1,8 @@
+# @package _global_
+
+defaults:
+  - override /problem: synthetic_isotherm_problem
+
+experiment:
+  name: Synthetic Isotherm Experiment
+

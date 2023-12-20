@@ -1,6 +1,13 @@
 import torch
+
+import hydra
+from omegaconf import DictConfig
+
 from matplotlib import pyplot as plt
 from ac_grammar_vae.model.gvae.interpreter import TorchEquationInterpreter, ExpressionWithParameters
+
+from ac_grammar_vae.config.experiment import register_isotherm_config, SymbolicIsothermExperimentConfig
+from ac_grammar_vae.data.sorption.problem import SymbolicIsothermProblem
 
 
 def plot_expression(expression, interpreter=None, domain=(-5.0, 5.0), steps=250):
@@ -82,9 +89,30 @@ def isotherm_experiments():
 
         print(f"Ended Run #{i}")
 
-def main():
-    sanity_check_experiment()
+
+@hydra.main(version_base="1.2", config_path="../config", config_name="symbolic_regression")
+def main(cfg: SymbolicIsothermExperimentConfig):
+
+    n_opt_steps = 250
+
+    # setup the symbolic regression problem
+    problem: SymbolicIsothermProblem = hydra.utils.instantiate(cfg.problem)
+
+    X, Y = problem.training_data.tensor
+
+    # load the model from file
+    model = torch.load("results/gvae_pretrained_parametric.pth")
+
+    print(f"Started Run")
+
+    model.eval()
+    expr = model.find_expression_for(X=X, Y=Y, num_opt_steps=n_opt_steps)
+
+    plot_expression(expr)
+    plt.savefig(f"results/solution_{ cfg.problem.isotherm_model.name.lower() }.pdf")
 
 
 if __name__ == "__main__":
+
+    register_isotherm_config()
     main()

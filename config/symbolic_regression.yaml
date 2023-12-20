@@ -1,0 +1,5 @@
+# @package _global_
+
+defaults:
+  - _self_
+  - problem: synthetic_isotherm_problem

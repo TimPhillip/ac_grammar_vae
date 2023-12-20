@@ -1,0 +1,55 @@
+problem:
+  _target_: ac_grammar_vae.data.sorption.problem.SyntheticSymbolicIsothermProblem
+  isotherm_model:
+    _target_: ac_grammar_vae.data.sorption.isotherm.Langmuir.from_parameter_prior_sample
+    name: Langmuir
+    latex_equation: $s_T\frac{kc}{1 + kc}$
+    random_seed: 20220
+  training_data:
+    _partial_: true
+    _target_: ac_grammar_vae.data.sorption.dataset.SyntheticSorptionDataset
+    n_samples: 20
+    random_seed: 20231
+    noise_level: 0.1
+    c_limits:
+    - 20.0
+    - 100.0
+  validation_data:
+    _partial_: true
+    _target_: ac_grammar_vae.data.sorption.dataset.SyntheticSorptionDataset
+    n_samples: 20
+    random_seed: 20222
+    noise_level: 0.1
+    c_limits:
+    - 20.0
+    - 100.0
+  test_data:
+    test1:
+      _partial_: true
+      _target_: ac_grammar_vae.data.sorption.dataset.SyntheticSorptionDataset
+      n_samples: 20
+      random_seed: 20223
+      noise_level: 0.0
+      c_limits:
+      - 20.0
+      - 100.0
+    test2:
+      _partial_: true
+      _target_: ac_grammar_vae.data.sorption.dataset.SyntheticSorptionDataset
+      n_samples: 20
+      random_seed: 20224
+      noise_level: 0.0
+      c_limits:
+      - 0.0
+      - 20.0
+    test3:
+      _partial_: true
+      _target_: ac_grammar_vae.data.sorption.dataset.SyntheticSorptionDataset
+      n_samples: 20
+      random_seed: 20225
+      noise_level: 0.0
+      c_limits:
+      - 100.0
+      - 150.0
+experiment:
+  name: Synthetic Isotherm Experiment
