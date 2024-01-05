@@ -1,6 +1,8 @@
 experiments/data
 experiments/results
 experiments/outputs
+experiments/mlruns
+experiments/multiruns
 
 
 # Standard Python gitignore
@@ -105,3 +107,4 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+/experiments/outputs/

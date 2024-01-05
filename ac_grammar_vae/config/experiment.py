@@ -41,6 +41,8 @@ class SymbolicIsothermExperimentConfig:
     # launcher
     #launcher = SlurmConfig()
 
+    n_opt_steps: int = MISSING
+    experiment_name: str = MISSING
 
 def register_isotherm_config():
 

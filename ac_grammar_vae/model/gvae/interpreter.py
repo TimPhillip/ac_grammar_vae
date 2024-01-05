@@ -1,4 +1,5 @@
 import torch
+import copy
 
 
 class TorchEquationInterpreter:
@@ -48,10 +49,10 @@ class ExpressionWithParameters(torch.nn.Module):
             'sqrt': 'torch.sqrt'
         }
 
-        self._expr = expr
+        self._expr = copy.copy(expr)
         param_indices = [i for i, val in enumerate(expr) if val == "theta"]
-        num_params = len(param_indices)
-        self._params = torch.nn.Parameter(data=torch.randn(num_params), requires_grad=True)
+        self.num_params = len(param_indices)
+        self._params = torch.nn.Parameter(data=torch.randn(self.num_params), requires_grad=True)
 
         def replace_with_semantics(symbol):
             return self._semantics[symbol] if symbol in self._semantics else symbol
@@ -61,20 +62,43 @@ class ExpressionWithParameters(torch.nn.Module):
 
         self._expression_str = "".join(map(replace_with_semantics, expr))
 
-    def optimize_parameters(self, X, Y, num_opt_steps=2000):
+    def optimize_parameters(self, X, Y, num_opt_steps=100):
 
-        optim = torch.optim.Adam(lr=1e-2, params=self.parameters())
+        if self.num_params == 0:
+            return
 
-        for _ in range(num_opt_steps):
+        #optim = torch.optim.Adam(lr=1e-2, params=self.parameters())
+        optim = torch.optim.LBFGS(lr=1e-2, params=self.parameters())
+
+        def closure():
             optim.zero_grad()
             Y_pred = eval(self._expression_str, {'torch': torch, 'x': X, 'theta': self._params})
             rmse = torch.sqrt(torch.mean(torch.square(Y_pred - Y)))
             rmse.backward()
-            optim.step()
+            return rmse.item()
+
+        for _ in range(num_opt_steps):
+            optim.step(closure=closure)
 
     def __call__(self, X):
         with torch.no_grad():
-            return eval(self._expression_str, {'torch': torch, 'x': X, 'theta': self._params})
+            y = eval(self._expression_str, {'torch': torch, 'x': X, 'theta': self._params})
+
+            # repeat the result if only constants are involved
+            if y.shape != X.shape:
+                y = y.repeat(X.shape[-1])
+
+            return y
+
+    def __str__(self):
+
+        param_indices = [i for i, val in enumerate(self._expr) if val == "theta"]
+        readable_expression = copy.copy(self._expr)
+
+        for i, idx in enumerate(param_indices):
+            readable_expression[idx] = f"{ self._params[i].item() : .2f}"
+
+        return "".join(readable_expression)
 
 
 if __name__ == "__main__":
@@ -95,4 +119,5 @@ if __name__ == "__main__":
     y_pred = expr(xx)
     error = torch.mean((y_pred - yy) ** 2)
     print(error.item())
+    print(expr)
 

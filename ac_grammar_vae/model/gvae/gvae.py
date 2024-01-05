@@ -179,22 +179,26 @@ class GrammarVariationalAutoencoder(torch.nn.Module):
         # replace missing values with the worst possible score
         Z_score = torch.nan_to_num(Z_score, nan=torch.min(torch.nan_to_num(Z_score, nan=torch.inf)).item())
 
-        ucb = estimate_ucb(Z, Z_score)
+        ucb = estimate_ucb(Z.detach(), Z_score.detach())
 
         for i in range(num_opt_steps):
             z_new = get_candidate_from_acquisition_func(ucb)
 
             z_score, expr = score_latent_code(z_new)
 
+            if not torch.isfinite(z_score):
+                z_score = torch.nan_to_num(z_score, nan=torch.min(Z_score).item())
+
             if z_score > best_score:
                 best_expr = expr
                 best_score = z_score
 
-            Z = torch.cat([Z, torch.as_tensor(z_new, dtype=torch.float64)])
-            z_score = torch.as_tensor(torch.reshape(z_score,shape=[1,1]), dtype=torch.float64)
-            Z_score = torch.cat([Z_score, z_score])
+            with torch.no_grad():
+                Z = torch.cat([Z, torch.as_tensor(z_new, dtype=torch.float64)])
+                z_score = torch.as_tensor(torch.reshape(z_score,shape=[1,1]), dtype=torch.float64)
+                Z_score = torch.cat([Z_score, z_score])
 
-            ucb = estimate_ucb(Z, Z_score)
+            ucb = estimate_ucb(Z.detach(), Z_score.detach())
 
         return best_expr
 
