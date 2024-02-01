@@ -72,7 +72,7 @@ class ExpressionWithParameters(torch.nn.Module):
 
         def closure():
             optim.zero_grad()
-            Y_pred = eval(self._expression_str, {'torch': torch, 'x': X, 'theta': self._params})
+            Y_pred = eval(self._expression_str, {'torch': torch, 'x1': X["\\lambda1"], 'x2': X["\\lambda2"], 'x3': X["\\lambda3"], 'theta': self._params})
             rmse = torch.sqrt(torch.mean(torch.square(Y_pred - Y)))
             rmse.backward()
             return rmse.item()
@@ -82,11 +82,11 @@ class ExpressionWithParameters(torch.nn.Module):
 
     def __call__(self, X):
         with torch.no_grad():
-            y = eval(self._expression_str, {'torch': torch, 'x': X, 'theta': self._params})
+            y = eval(self._expression_str, {'torch': torch, 'x1': X["\\lambda1"], 'x2': X["\\lambda2"], 'x3': X["\\lambda3"], 'theta': self._params})
 
             # repeat the result if only constants are involved
-            if y.shape != X.shape:
-                y = y.repeat(X.shape[-1])
+            if y.shape != X["\\lambda1"].shape:
+                y = y.repeat(X["\\lambda1"].shape[-1])
 
             return y
 
