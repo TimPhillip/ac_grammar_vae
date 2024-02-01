@@ -43,17 +43,17 @@ ogden_mat3 = partial(ogden_model, alphas=[0.75, -0.25, 2.89], mus=[.1, .03, .005
 
 
 @hydra.main(version_base="1.2", config_path="../config", config_name="he_symbolic_regression")
-def main(cfg: SymbolicIsothermExperimentConfig):
+def main(cfg: DictConfig):
 
     n_opt_steps = cfg.n_opt_steps
 
-    if cfg.problem == "ogden-1":
+    if cfg.problem_name == "ogden-1":
         current_model = ogden_mat1
 
-    if cfg.problem == "ogden-2":
+    if cfg.problem_name == "ogden-2":
         current_model = ogden_mat2
 
-    if cfg.problem == "ogden-3":
+    if cfg.problem_name == "ogden-3":
         current_model = ogden_mat3
 
     n_data = 20
@@ -95,7 +95,7 @@ def main(cfg: SymbolicIsothermExperimentConfig):
     with mlflow.start_run():
 
         # log the parameters
-        mlflow.log_param("problem", cfg.problem)
+        mlflow.log_param("problem", cfg.problem_name)
         mlflow.log_param("n_opt_steps", cfg.n_opt_steps)
 
         # fit the expression
