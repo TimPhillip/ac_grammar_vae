@@ -87,7 +87,7 @@ def main(cfg: DictConfig):
     Y_test3 = current_model(X_test3['\\lambda_1'], X_test3['\\lambda_2'], X_test3['\\lambda_3'])
 
     # load the model from file
-    model = torch.load(to_absolute_path("results/gvae_pretrained_parametric.pth"))
+    model = torch.load(to_absolute_path("results/gvae_pretrained_parametric_3.pth"))
 
     mlflow.set_tracking_uri(to_absolute_path("./mlruns"))
     mlflow.set_experiment(cfg.experiment_name)
