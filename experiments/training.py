@@ -38,7 +38,7 @@ def main():
     num_epochs = 20
     early_stopping_patience = 3
     expression_with_parameters = True
-    export_file = "results/gvae_pretrained.pth" if not expression_with_parameters else "results/gvae_pretrained_parametric.pth"
+    export_file = "results/gvae_pretrained.pth" if not expression_with_parameters else "results/gvae_pretrained_parametric_3.pth"
     batch_size = 600
     val_batch_size = 2048
 

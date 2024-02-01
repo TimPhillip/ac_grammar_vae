@@ -50,7 +50,9 @@ class CFGEquationDataset(Dataset):
             T -> 'exp' '(' S ')'
             T -> 'log' '(' S ')'
             T -> 'sqrt' '(' S ')'
-            T -> 'x'
+            T -> 'x1'
+            T -> 'x2'
+            T -> 'x3'
             T -> 'theta'
             """
 
