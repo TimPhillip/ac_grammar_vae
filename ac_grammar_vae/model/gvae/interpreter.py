@@ -84,6 +84,13 @@ class ExpressionWithParameters(torch.nn.Module):
         num_ops = 0
         num_unique_ops = 0
 
+        # count the different operations
+        for sym in ["+", "-", "/", "*", "**", "sin", "cos", "exp", "log", "sqrt", "x"]:
+            sym_count = len(list(filter(lambda s: s == sym, self._expr.split(" "))))
+            if sym_count > 0:
+                num_ops += sym_count
+                num_unique_ops += 1
+
         return num_ops * math.log2(num_unique_ops)
 
     def optimize_parameters(self, X, Y, num_opt_steps=100):
