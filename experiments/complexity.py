@@ -4,6 +4,7 @@ import hydra
 from hydra.utils import to_absolute_path
 from omegaconf import DictConfig
 import mlflow
+import logging
 
 from matplotlib import pyplot as plt
 from ac_grammar_vae.model.gvae.interpreter import TorchEquationInterpreter, ExpressionWithParameters
@@ -38,12 +39,13 @@ def main(cfg: SymbolicIsothermExperimentConfig):
         model.eval()
         expr = model.find_expression_for(X=X, Y=Y, num_opt_steps=n_opt_steps)
 
-        mlflow.log_param("complexity", expr.complexity)
-        logging.info(f"Complexity: {expr.complexity}")
-        mlflow.log_param("structure_complexity", expr.structure_complexity)
-        logging.info(f"Structure Complexity: {expr.structure_complexity}")
-        mlflow.log_param("Parameter Complexity", expr.parameter_complexity)
-        logging.info(f"Parameter Complexity: {expr.parameter_complexity}")
+        logging.info(str(expr))
+        mlflow.log_param("complexity", expr.complexity())
+        logging.info(f"Complexity: {expr.complexity()}")
+        mlflow.log_param("structure_complexity", expr.structure_complexity())
+        logging.info(f"Structure Complexity: {expr.structure_complexity()}")
+        mlflow.log_param("Parameter Complexity", expr.parameter_complexity())
+        logging.info(f"Parameter Complexity: {expr.parameter_complexity()}")
 
         rmse = torch.sqrt(torch.mean(torch.square(Y - expr(X))))
         mlflow.log_metric("training/RMSE", rmse.item())

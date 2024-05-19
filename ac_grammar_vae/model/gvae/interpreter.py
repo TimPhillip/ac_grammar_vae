@@ -1,5 +1,6 @@
 import torch
 import copy
+import math
 
 
 class TorchEquationInterpreter:
@@ -68,25 +69,22 @@ class ExpressionWithParameters(torch.nn.Module):
 
         self._expression_str = "".join(map(replace_with_semantics, expr))
 
-    @property
     def complexity(self):
-        return self.parameter_complexity + self.structure_complexity
+        return self.parameter_complexity() + self.structure_complexity()
 
-    @property
     def parameter_complexity(self):
         comp = 0
         for param in self._params:
             comp += real_complexity(param.item())
         return comp
 
-    @property
     def structure_complexity(self):
         num_ops = 0
         num_unique_ops = 0
 
         # count the different operations
         for sym in ["+", "-", "/", "*", "**", "sin", "cos", "exp", "log", "sqrt", "x"]:
-            sym_count = len(list(filter(lambda s: s == sym, self._expr.split(" "))))
+            sym_count = len(list(filter(lambda s: s == sym, self._expr)))
             if sym_count > 0:
                 num_ops += sym_count
                 num_unique_ops += 1
@@ -103,7 +101,7 @@ class ExpressionWithParameters(torch.nn.Module):
 
         def closure():
             optim.zero_grad()
-            Y_pred = eval(self._expression_str, {'torch': torch, 'x1': X["\\lambda_1"], 'x2': X["\\lambda_2"], 'x3': X["\\lambda_3"], 'theta': self._params})
+            Y_pred = eval(self._expression_str, {'torch': torch, 'x': X, 'theta': self._params})
             rmse = torch.sqrt(torch.mean(torch.square(Y_pred - Y)))
             rmse.backward()
             return rmse.item()
@@ -113,11 +111,11 @@ class ExpressionWithParameters(torch.nn.Module):
 
     def __call__(self, X):
         with torch.no_grad():
-            y = eval(self._expression_str, {'torch': torch, 'x1': X["\\lambda_1"], 'x2': X["\\lambda_2"], 'x3': X["\\lambda_3"], 'theta': self._params})
+            y = eval(self._expression_str, {'torch': torch, 'x': X, 'theta': self._params})
 
             # repeat the result if only constants are involved
-            if y.shape != X["\\lambda_1"].shape:
-                y = y.repeat(X["\\lambda_1"].shape[-1])
+            if y.shape != X.shape:
+                y = y.repeat(X.shape[-1])
 
             return y
 
