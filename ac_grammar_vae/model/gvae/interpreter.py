@@ -36,6 +36,12 @@ class TorchEquationInterpreter:
         return y
 
 
+def real_complexity(r):
+    eps= 10**(-9)
+    x = r / eps
+    return math.log2(1 + x**2)
+
+
 class ExpressionWithParameters(torch.nn.Module):
 
     def __init__(self, expr):
@@ -61,6 +67,24 @@ class ExpressionWithParameters(torch.nn.Module):
             expr[idx] = f"theta[{ i }]"
 
         self._expression_str = "".join(map(replace_with_semantics, expr))
+
+    @property
+    def complexity(self):
+        return self.parameter_complexity + self.structure_complexity
+
+    @property
+    def parameter_complexity(self):
+        comp = 0
+        for param in self._params:
+            comp += real_complexity(param.item())
+        return comp
+
+    @property
+    def structure_complexity(self):
+        num_ops = 0
+        num_unique_ops = 0
+
+        return num_ops * math.log2(num_unique_ops)
 
     def optimize_parameters(self, X, Y, num_opt_steps=100):
 
